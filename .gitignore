@@ -1,0 +1,68 @@
+# ==========================================
+# Vector Databases & Embedding Indexes
+# ==========================================
+OSHO_Philosophy_Master_Index/
+OSHO_Master_Index/
+all_index/
+*.faiss
+*.pkl
+*.pickle
+
+# ==========================================
+# Python Virtual Environments
+# ==========================================
+myvenv/
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ==========================================
+# Python Bytecode & Cache
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ==========================================
+# Backups, Logs & Temporary Files
+# ==========================================
+Backup/
+backup/
+*.log
+ollama.log
+notes.txt
+*.tmp
+*.bak
+*.swp
+
+# ==========================================
+# Raw Datasets & Book Downloads
+# ==========================================
+*.pdf
+*.zip
+*.tar
+*.tar.gz
+*.zst
+
+# ==========================================
+# Environment Variables & Secrets
+# ==========================================
+.env
+.env.*
+!.env.example
+
+# ==========================================
+# OS & IDE Specific Files
+# ==========================================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
