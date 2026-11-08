@@ -72,7 +72,7 @@ pip install -r requirements.txt
 
 Due to file size limits on GitHub, the 1.8 GB pre-merged master vector database (`OSHO_Philosophy_Master_Index`) is hosted externally.
 
-1. Download the merged FAISS index folder from your release/download link.
+1. Download the merged FAISS index folder from [public kaggle URl](https://www.kaggle.com/datasets/vikashdev/osho-philosophy-master-index/data).
 2. Extract the unzipped `OSHO_Philosophy_Master_Index` directory directly into your project root folder.
 
 ### Expected Directory Structure:
