@@ -36,6 +36,14 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 RETRIEVAL_K = 3
 MAX_HISTORY_TURNS = 6  # 3 user + 3 assistant turns
 
+def get_ollama_tags_url() -> str:
+    tags_env = os.getenv("OLLAMA_TAGS_URL")
+    if tags_env:
+        return tags_env
+    if "/api/generate" in OLLAMA_API_URL:
+        return OLLAMA_API_URL.replace("/api/generate", "/api/tags")
+    return "http://localhost:11434/api/tags"
+
 # Global runtime state
 class AppState:
     vectorstore: Optional[FAISS] = None
@@ -140,6 +148,12 @@ class CitationItem(BaseModel):
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, description="Seeker's question or prompt")
     session_id: Optional[str] = Field(default="default", description="Conversation session ID")
+    model: Optional[str] = Field(default=None, description="Dynamic Ollama model name")
+
+class ModelsResponse(BaseModel):
+    models: List[str]
+    current_default: str
+    status: str
 
 class ChatResponse(BaseModel):
     answer: str
@@ -249,6 +263,39 @@ async def get_stats():
     )
 
 
+@app.get("/api/models", response_model=ModelsResponse)
+async def list_models():
+    """
+    Fetches currently installed models from local Ollama daemon (/api/tags).
+    Falls back gracefully if Ollama is unreachable.
+    """
+    tags_url = get_ollama_tags_url()
+    try:
+        async with httpx.AsyncClient(timeout=4.0) as client:
+            resp = await client.get(tags_url)
+            if resp.status_code == 200:
+                data = resp.json()
+                raw_models = data.get("models", [])
+                model_names = [m.get("name") for m in raw_models if m.get("name")]
+                if model_names:
+                    current_default = OLLAMA_MODEL if OLLAMA_MODEL in model_names else model_names[0]
+                    return ModelsResponse(
+                        models=model_names,
+                        current_default=current_default,
+                        status="online"
+                    )
+            else:
+                logger.warning(f"Ollama tags endpoint returned status {resp.status_code}")
+    except Exception as e:
+        logger.warning(f"Could not connect to Ollama to list models ({e}). Falling back to default '{OLLAMA_MODEL}'.")
+
+    return ModelsResponse(
+        models=[OLLAMA_MODEL],
+        current_default=OLLAMA_MODEL,
+        status="offline"
+    )
+
+
 @app.get("/api/health")
 async def health_check():
     """Health check for service monitoring."""
@@ -293,6 +340,7 @@ async def chat_endpoint(req: ChatRequest):
 
     user_query = req.message.strip()
     session_id = req.session_id or "default"
+    selected_model = req.model.strip() if req.model and req.model.strip() else OLLAMA_MODEL
     if not user_query:
         raise HTTPException(status_code=400, detail="User message cannot be empty.")
 
@@ -358,7 +406,7 @@ async def chat_endpoint(req: ChatRequest):
 
     # 4. Query Ollama local API
     payload = {
-        "model": OLLAMA_MODEL,
+        "model": selected_model,
         "prompt": prompt,
         "stream": False,
         "options": {
@@ -378,13 +426,13 @@ async def chat_endpoint(req: ChatRequest):
                 logger.error(f"Ollama returned HTTP {resp.status_code}: {resp.text}")
                 answer_text = (
                     "Osho's contemplation could not be fully transmitted because the local language model "
-                    f"returned an error ({resp.status_code}). Please verify that Ollama is active with `{OLLAMA_MODEL}`."
+                    f"returned an error ({resp.status_code}). Please verify that Ollama is active with `{selected_model}`."
                 )
     except httpx.ConnectError:
         logger.error(f"Could not connect to Ollama at {OLLAMA_API_URL}")
         answer_text = (
             "⚠️ **Could not connect to local Ollama server**.\n\n"
-            f"Please make sure Ollama is running (`ollama serve`) and that `{OLLAMA_MODEL}` is loaded."
+            f"Please make sure Ollama is running (`ollama serve`) and that `{selected_model}` is loaded."
         )
     except (httpx.TimeoutException, httpx.ReadTimeout):
         logger.error("Inference timed out waiting for Ollama response.")
@@ -406,14 +454,14 @@ async def chat_endpoint(req: ChatRequest):
     if len(session_history) > MAX_HISTORY_TURNS * 2:
         chat_sessions[session_id] = session_history[-MAX_HISTORY_TURNS * 2:]
 
-    logger.info(f"✨ Query completed in {elapsed_time}s | Session: {session_id} | Chunks: {len(citations)}")
+    logger.info(f"✨ Query completed in {elapsed_time}s | Session: {session_id} | Model: {selected_model} | Chunks: {len(citations)}")
 
     return ChatResponse(
         answer=answer_text,
         sources=citations,
         latency=elapsed_time,
         session_id=session_id,
-        model=OLLAMA_MODEL
+        model=selected_model
     )
 
 

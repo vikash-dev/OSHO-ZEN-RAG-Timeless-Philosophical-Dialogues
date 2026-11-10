@@ -470,8 +470,22 @@
           </div>
         </div>
 
-        <!-- Right Controls: Latency, Theme Switcher, Clear Chat -->
+        <!-- Right Controls: Model Selector, Latency, Theme Switcher, Clear Chat -->
         <div class="flex items-center gap-2 sm:gap-3">
+          
+          <!-- Sleek Dynamic Model Selector Dropdown -->
+          <div class="relative flex items-center group" title="Active Ollama Reasoning Model">
+            <i data-lucide="cpu" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 absolute left-2.5 pointer-events-none z-10"></i>
+            <select 
+              id="model-selector" 
+              aria-label="Select AI Reasoning Model"
+              class="appearance-none pl-8 pr-7 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-zen-850 dark:hover:bg-zen-800 border border-slate-200 dark:border-zen-border text-slate-700 dark:text-amber-200 text-xs font-mono font-medium transition-all duration-200 shadow-2xs focus:outline-none focus:ring-2 focus:ring-amber-500/40 cursor-pointer max-w-[125px] sm:max-w-[170px] truncate"
+            >
+              <option value="qwen2.5:3b">qwen2.5:3b</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute right-2 pointer-events-none z-10 transition-transform duration-200 group-hover:translate-y-0.5"></i>
+          </div>
+
           <!-- Latency Badge -->
           <div id="top-latency-tag" class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-zen-850 border border-slate-200 dark:border-zen-border text-xs text-slate-700 dark:text-amber-300">
             <i data-lucide="timer" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400"></i>
@@ -576,7 +590,7 @@
                 </span>
               </div>
               <p class="text-xs text-slate-500 dark:text-slate-400 animate-pulse">
-                Consulting 374,000+ discourse vectors and weaving parent context into Qwen 2.5...
+                Consulting 374,000+ discourse vectors and synthesizing context via <span id="loading-model-name" class="font-mono font-medium text-amber-600 dark:text-amber-400">qwen2.5:3b</span>...
               </p>
               <div class="flex items-center gap-1.5 pt-1">
                 <span class="w-2 h-2 rounded-full bg-amber-500/80 dark:bg-amber-400/60 animate-bounce" style="animation-delay: 0s;"></span>
@@ -637,7 +651,7 @@
           </form>
 
           <p class="text-center text-[11px] text-slate-400 dark:text-slate-500 mt-2">
-            Local RAG synthesis powered by Ollama Qwen2.5 · Grounded in verified Osho discourses
+            Local RAG synthesis powered by Ollama · Grounded in verified Osho discourses
           </p>
 
         </div>
@@ -676,11 +690,13 @@
     const heroBanner = document.getElementById("hero-banner");
     const loadingIndicator = document.getElementById("loading-indicator");
     const contemplatingPhrase = document.getElementById("contemplating-phrase");
+    const loadingModelName = document.getElementById("loading-model-name");
     const systemLatencyDisplay = document.getElementById("system-latency-display");
     const topLatencyTag = document.getElementById("top-latency-tag");
     const topLatencyText = document.getElementById("top-latency-text");
     const vectorCountEl = document.getElementById("vector-count");
     const activeModelName = document.getElementById("active-model-name");
+    const modelSelector = document.getElementById("model-selector");
     const newChatBtn = document.getElementById("new-chat-btn");
     const clearChatTopBtn = document.getElementById("clear-chat-top-btn");
     const resetInputBtn = document.getElementById("reset-input-btn");
@@ -712,6 +728,65 @@
       breaks: true,
       gfm: true
     });
+
+    // ==========================================
+    // DYNAMIC MODEL SELECTION & OLLAMA ENGINES
+    // ==========================================
+    function getSelectedModel() {
+      return modelSelector ? modelSelector.value : (localStorage.getItem("osho_rag_selected_model") || "qwen2.5:3b");
+    }
+
+    function updateActiveModelDisplay(modelName) {
+      if (activeModelName) activeModelName.textContent = modelName;
+      if (loadingModelName) loadingModelName.textContent = modelName;
+    }
+
+    async function loadModels() {
+      try {
+        const res = await fetch("/api/models");
+        if (res.ok) {
+          const data = await res.json();
+          const models = data.models || [];
+          if (models.length > 0 && modelSelector) {
+            const savedModel = localStorage.getItem("osho_rag_selected_model");
+            modelSelector.innerHTML = "";
+            models.forEach(model => {
+              const opt = document.createElement("option");
+              opt.value = model;
+              opt.textContent = model;
+              opt.className = "bg-white dark:bg-zen-900 text-slate-800 dark:text-amber-200 font-mono";
+              modelSelector.appendChild(opt);
+            });
+
+            // Select saved preference or default model
+            if (savedModel && models.includes(savedModel)) {
+              modelSelector.value = savedModel;
+            } else if (data.current_default && models.includes(data.current_default)) {
+              modelSelector.value = data.current_default;
+            } else {
+              modelSelector.value = models[0];
+            }
+            localStorage.setItem("osho_rag_selected_model", modelSelector.value);
+            updateActiveModelDisplay(modelSelector.value);
+            lucide.createIcons();
+          }
+        }
+      } catch (err) {
+        console.warn("Could not retrieve models list:", err);
+      }
+    }
+
+    if (modelSelector) {
+      modelSelector.addEventListener("change", (e) => {
+        const selectedModel = e.target.value;
+        localStorage.setItem("osho_rag_selected_model", selectedModel);
+        updateActiveModelDisplay(selectedModel);
+        showToast(`Reasoning model switched to ${selectedModel}`, "info");
+      });
+    }
+
+    // Load available models on startup
+    loadModels();
 
     // ==========================================
     // AUTO-HIDE & RESTORE HERO ELEMENTS LOGIC
@@ -836,7 +911,7 @@
           if (data.vector_count && vectorCountEl) {
             vectorCountEl.textContent = Number(data.vector_count).toLocaleString();
           }
-          if (data.model && activeModelName) {
+          if (data.model && activeModelName && !localStorage.getItem("osho_rag_selected_model")) {
             activeModelName.textContent = data.model;
           }
         }
@@ -976,7 +1051,7 @@
     }
 
     // Render Assistant Message with Markdown Prose & Citations Accordion
-    function appendAssistantMessage(answerMarkdown, sources, latency) {
+    function appendAssistantMessage(answerMarkdown, sources, latency, modelName) {
       const msgDiv = document.createElement("div");
       msgDiv.className = "flex items-start gap-3 max-w-4xl mr-auto";
 
@@ -984,6 +1059,7 @@
       const parsedHtml = marked.parse(answerMarkdown || "");
       const encodedText = btoa(unescape(encodeURIComponent(answerMarkdown || "")));
       const messageId = "msg_" + Math.random().toString(36).substring(2, 9);
+      const activeModelLabel = modelName || getSelectedModel();
 
       // Build citations accordion HTML
       let citationsHtml = "";
@@ -1067,11 +1143,11 @@
         <div class="flex-1 max-w-3xl">
           <div class="p-5 sm:p-6 rounded-2xl rounded-tl-sm bg-white dark:bg-zen-900 border border-slate-200 dark:border-zen-border text-slate-800 dark:text-slate-100 shadow-sm dark:shadow-xl dark:gold-glow relative group transition-colors duration-300">
             
-            <!-- Message Header: Osho tag, latency, copy button -->
+            <!-- Message Header: Osho tag, model name, latency, copy button -->
             <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-200 dark:border-zen-border/60">
               <div class="flex items-center gap-2">
                 <span class="font-serif font-bold text-amber-700 dark:text-amber-300 text-sm tracking-wide">Osho</span>
-                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-50 dark:bg-zen-800 border border-amber-200/60 dark:border-zen-border text-amber-800 dark:text-amber-400/80">qwen2.5:3b</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-50 dark:bg-zen-800 border border-amber-200/60 dark:border-zen-border text-amber-800 dark:text-amber-400/80">${activeModelLabel}</span>
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1">
@@ -1111,6 +1187,9 @@
       const message = userInput.value.trim();
       if (!message || isContemplating) return;
 
+      const currentSelectedModel = getSelectedModel();
+      updateActiveModelDisplay(currentSelectedModel);
+
       // Lock UI
       isContemplating = true;
       sendButton.disabled = true;
@@ -1137,7 +1216,8 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             message: message,
-            session_id: sessionId
+            session_id: sessionId,
+            model: currentSelectedModel
           })
         });
 
@@ -1146,7 +1226,7 @@
 
         if (res.ok) {
           const data = await res.json();
-          appendAssistantMessage(data.answer, data.sources, data.latency);
+          appendAssistantMessage(data.answer, data.sources, data.latency, data.model);
           
           // Update latency indicators
           const latencyStr = `${data.latency}s`;
@@ -1156,13 +1236,13 @@
         } else {
           const errData = await res.json().catch(() => ({}));
           const errMsg = errData.detail || "Error connecting to the reasoning pipeline.";
-          appendAssistantMessage(`⚠️ **Contemplation interrupted**: ${errMsg}`, [], 0);
+          appendAssistantMessage(`⚠️ **Contemplation interrupted**: ${errMsg}`, [], 0, currentSelectedModel);
           showToast(errMsg, "error");
         }
       } catch (err) {
         clearInterval(contemplationPhrasesInterval);
         loadingIndicator.classList.add("hidden");
-        appendAssistantMessage(`⚠️ **Connection Error**: Could not reach the server at \`/api/chat\`. Please verify that the FastAPI backend is running.`, [], 0);
+        appendAssistantMessage(`⚠️ **Connection Error**: Could not reach the server at \`/api/chat\`. Please verify that the FastAPI backend is running.`, [], 0, currentSelectedModel);
         showToast("Backend connection error", "error");
       } finally {
         isContemplating = false;
