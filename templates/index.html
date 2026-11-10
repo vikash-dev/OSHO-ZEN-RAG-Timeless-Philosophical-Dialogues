@@ -5,10 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Osho Philosophy | Zen RAG Chatbot</title>
 
-  <!-- Google Fonts: Inter & Cinzel -->
+  <!-- Prevent Theme Flash On Reload -->
+  <script>
+    (function() {
+      try {
+        var savedTheme = localStorage.getItem('osho_rag_theme');
+        if (savedTheme === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
+  <!-- Google Fonts: Inter, Cinzel, Plus Jakarta Sans, JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -37,7 +53,7 @@
             }
           },
           fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            sans: ['"Inter"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
             serif: ['"Cinzel"', 'serif'],
             mono: ['"JetBrains Mono"', 'monospace'],
           },
@@ -48,8 +64,8 @@
           },
           keyframes: {
             zenBreathe: {
-              '0%, 100%': { transform: 'scale(1)', opacity: '0.85', filter: 'drop-shadow(0 0 12px rgba(245, 158, 11, 0.3))' },
-              '50%': { transform: 'scale(1.06)', opacity: '1', filter: 'drop-shadow(0 0 25px rgba(245, 158, 11, 0.6))' },
+              '0%, 100%': { transform: 'scale(1)', opacity: '0.85', filter: 'drop-shadow(0 0 10px rgba(245, 158, 11, 0.3))' },
+              '50%': { transform: 'scale(1.05)', opacity: '1', filter: 'drop-shadow(0 0 20px rgba(245, 158, 11, 0.5))' },
             },
             floatSlow: {
               '0%, 100%': { transform: 'translateY(0px)' },
@@ -67,30 +83,65 @@
   <!-- Marked.js Markdown Parser -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-  <!-- Highlight.js for Code Highlighting -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <!-- Highlight.js for Code Highlighting (Light / Dark Adaptive) -->
+  <link id="highlight-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
   <style>
-    /* Custom Scrollbar for Zen Aesthetic */
+    /* Custom Scrollbar for Light & Zen Dark Aesthetics */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
     ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .dark ::-webkit-scrollbar-track {
       background: #0d0f17;
     }
     ::-webkit-scrollbar-thumb {
-      background: #262d42;
+      background: #cbd5e1;
       border-radius: 9999px;
     }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #262d42;
+    }
     ::-webkit-scrollbar-thumb:hover {
+      background: #d97706;
+    }
+    .dark ::-webkit-scrollbar-thumb:hover {
       background: #f59e0b;
     }
 
-    /* Markdown prose styles inside assistant responses */
+    /* Ambient Background Patterns */
+    .zen-bg-pattern {
+      background-color: #f8f9fa;
+      background-image: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.05) 0%, transparent 55%),
+                        radial-gradient(circle at 100% 100%, rgba(226, 232, 240, 0.5) 0%, transparent 60%);
+    }
+    .dark .zen-bg-pattern {
+      background-color: #07080c;
+      background-image: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.05) 0%, transparent 60%),
+                        radial-gradient(circle at 100% 100%, rgba(30, 41, 59, 0.15) 0%, transparent 50%);
+    }
+
+    /* Ambient Gold Glow */
+    .gold-glow {
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    }
+    .dark .gold-glow {
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.12);
+    }
+    .gold-glow-strong {
+      box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.15), 0 2px 4px -2px rgba(245, 158, 11, 0.1);
+    }
+    .dark .gold-glow-strong {
+      box-shadow: 0 0 35px rgba(245, 158, 11, 0.28);
+    }
+
+    /* Markdown Prose Styles - Minimalist Light Mode */
     .zen-prose {
-      color: #e2e8f0;
+      color: #1e293b;
       line-height: 1.8;
       font-size: 0.98rem;
     }
@@ -102,7 +153,7 @@
     }
     .zen-prose h1, .zen-prose h2, .zen-prose h3, .zen-prose h4 {
       font-family: 'Cinzel', serif;
-      color: #fbbf24;
+      color: #b45309;
       font-weight: 600;
       margin-top: 1.4rem;
       margin-bottom: 0.6rem;
@@ -112,13 +163,13 @@
     .zen-prose h2 { font-size: 1.2rem; }
     .zen-prose h3 { font-size: 1.05rem; }
     .zen-prose blockquote {
-      border-left: 3px solid #f59e0b;
-      background: rgba(245, 158, 11, 0.04);
+      border-left: 3px solid #d97706;
+      background: rgba(245, 158, 11, 0.08);
       padding: 0.6rem 1rem;
       margin: 1rem 0;
       border-radius: 0 0.5rem 0.5rem 0;
       font-style: italic;
-      color: #fde68a;
+      color: #92400e;
     }
     .zen-prose ul {
       list-style-type: disc;
@@ -134,25 +185,25 @@
       margin-bottom: 0.4rem;
     }
     .zen-prose strong {
-      color: #fef08a;
+      color: #0f172a;
       font-weight: 600;
     }
     .zen-prose em {
-      color: #fde68a;
+      color: #78350f;
       font-style: italic;
     }
     .zen-prose code {
-      background: #171b29;
-      border: 1px solid #262d42;
-      color: #fbbf24;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      color: #b45309;
       padding: 0.15rem 0.4rem;
       border-radius: 0.35rem;
       font-family: 'JetBrains Mono', monospace;
       font-size: 0.88em;
     }
     .zen-prose pre {
-      background: #121520;
-      border: 1px solid #202538;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
       border-radius: 0.75rem;
       padding: 1rem;
       margin: 1rem 0;
@@ -165,19 +216,32 @@
       color: inherit;
     }
 
-    /* Ambient Gold Glow */
-    .gold-glow {
-      box-shadow: 0 0 25px rgba(245, 158, 11, 0.12);
+    /* Markdown Prose Styles - Zen Amber Dark Mode */
+    .dark .zen-prose {
+      color: #e2e8f0;
     }
-    .gold-glow-strong {
-      box-shadow: 0 0 35px rgba(245, 158, 11, 0.28);
+    .dark .zen-prose h1, .dark .zen-prose h2, .dark .zen-prose h3, .dark .zen-prose h4 {
+      color: #fbbf24;
     }
-
-    /* Subtle Lotus Watermark Background */
-    .zen-bg-pattern {
-      background-color: #07080c;
-      background-image: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.05) 0%, transparent 60%),
-                        radial-gradient(circle at 100% 100%, rgba(30, 41, 59, 0.15) 0%, transparent 50%);
+    .dark .zen-prose blockquote {
+      border-left: 3px solid #f59e0b;
+      background: rgba(245, 158, 11, 0.05);
+      color: #fde68a;
+    }
+    .dark .zen-prose strong {
+      color: #fef08a;
+    }
+    .dark .zen-prose em {
+      color: #fde68a;
+    }
+    .dark .zen-prose code {
+      background: #171b29;
+      border: 1px solid #262d42;
+      color: #fbbf24;
+    }
+    .dark .zen-prose pre {
+      background: #121520;
+      border: 1px solid #202538;
     }
 
     /* Collapsible Accordion Transition */
@@ -189,12 +253,63 @@
     .accordion-content.open {
       max-height: 1200px;
     }
+
+    /* Spring Transition For Theme Switch Icons */
+    .theme-icon-spring {
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+    }
+    html:not(.dark) #theme-sun-icon {
+      opacity: 1;
+      transform: rotate(0deg) scale(1);
+    }
+    html:not(.dark) #theme-moon-icon {
+      opacity: 0;
+      transform: rotate(90deg) scale(0.5);
+      pointer-events-none;
+    }
+    html.dark #theme-sun-icon {
+      opacity: 0;
+      transform: rotate(-90deg) scale(0.5);
+      pointer-events-none;
+    }
+    html.dark #theme-moon-icon {
+      opacity: 1;
+      transform: rotate(0deg) scale(1);
+    }
+
+    /* Smooth Auto-Hide Transition for Hero Banner & Welcome Content */
+    .hero-banner-transition {
+      transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1), 
+                  max-width 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+                  transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+      max-width: 600px;
+      opacity: 1;
+      overflow: hidden;
+    }
+    .hero-banner-hidden {
+      opacity: 0 !important;
+      max-width: 0 !important;
+      transform: translateX(-12px);
+      pointer-events: none !important;
+    }
+
+    .welcome-transition {
+      transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1), 
+                  transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .welcome-hidden {
+      opacity: 0 !important;
+      transform: translateY(-16px) scale(0.97);
+      pointer-events: none !important;
+    }
   </style>
 </head>
-<body class="bg-zen-950 text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-amber-500/30 selection:text-amber-200">
+<body class="bg-slate-50 dark:bg-zen-950 text-slate-800 dark:text-slate-100 font-sans min-h-screen flex flex-col antialiased transition-colors duration-300 selection:bg-amber-500/25 selection:text-amber-900 dark:selection:text-amber-200">
 
   <!-- Ambient Top Glow -->
-  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[700px] h-[160px] bg-amber-500/5 blur-[120px] pointer-events-none z-0"></div>
+  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[700px] h-[160px] bg-amber-500/10 dark:bg-amber-500/5 blur-[120px] pointer-events-none z-0 transition-opacity duration-300"></div>
 
   <!-- Toast Notification Container -->
   <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
@@ -203,107 +318,107 @@
   <div class="relative z-10 flex h-screen w-full overflow-hidden">
 
     <!-- ==================================================== -->
-    <!-- SIDEBAR: Telemetry, Model Info, Stats, Actions       -->
+    <!-- SIDEBAR: Minimal Header, New Chat, Inquiries, Quote  -->
     <!-- ==================================================== -->
-    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-80 bg-zen-900 border-r border-zen-border flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none">
+    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-40 w-80 bg-white dark:bg-zen-900 border-r border-slate-200 dark:border-zen-border flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-all duration-300 ease-in-out shadow-xl md:shadow-none">
       
       <!-- Top Section -->
       <div class="flex flex-col h-full overflow-y-auto p-5">
         
         <!-- App Brand Header -->
-        <div class="flex items-center justify-between pb-5 border-b border-zen-border">
+        <div class="flex items-center justify-between pb-5 border-b border-slate-200 dark:border-zen-border">
           <div class="flex items-center gap-3">
-            <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-zen-850 border border-amber-500/40 text-amber-400 gold-glow">
+            <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/15 via-amber-100 to-amber-200/40 dark:from-amber-500/20 dark:to-zen-850 border border-amber-400/50 dark:border-amber-500/40 text-amber-600 dark:text-amber-400 shadow-xs dark:gold-glow">
               <i data-lucide="sun" class="w-5 h-5 animate-breathe"></i>
             </div>
             <div>
-              <h1 class="font-serif font-bold text-lg tracking-wide text-amber-100 flex items-center gap-1.5">
-                OSHO <span class="text-xs font-sans font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">ZEN RAG</span>
+              <h1 class="font-serif font-bold text-lg tracking-wide text-slate-900 dark:text-amber-100 flex items-center gap-1.5">
+                OSHO <span class="text-xs font-sans font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30">ZEN RAG</span>
               </h1>
-              <p class="text-xs text-slate-400">Timeless Philosophical Dialogues</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400">Timeless Philosophical Dialogues</p>
             </div>
           </div>
           <!-- Mobile Close Button -->
-          <button id="close-sidebar-btn" class="md:hidden text-slate-400 hover:text-white p-1 rounded-lg">
+          <button id="close-sidebar-btn" aria-label="Close sidebar" class="md:hidden text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white p-1 rounded-lg">
             <i data-lucide="x" class="w-5 h-5"></i>
           </button>
         </div>
 
         <!-- New Chat Action Button -->
         <div class="mt-4">
-          <button id="new-chat-btn" class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500/10 hover:from-amber-500/20 to-zen-850 hover:to-zen-800 border border-amber-500/30 hover:border-amber-400/60 text-amber-200 font-medium text-sm transition-all duration-200 shadow-sm active:scale-[0.98]">
-            <i data-lucide="plus-circle" class="w-4 h-4 text-amber-400"></i>
+          <button id="new-chat-btn" class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500/10 hover:from-amber-500/20 to-amber-100/50 hover:to-amber-100 dark:to-zen-850 dark:hover:to-zen-800 border border-amber-500/30 hover:border-amber-500/50 dark:hover:border-amber-400/60 text-amber-900 dark:text-amber-200 font-medium text-sm transition-all duration-200 shadow-xs active:scale-[0.98]">
+            <i data-lucide="plus-circle" class="w-4 h-4 text-amber-600 dark:text-amber-400"></i>
             <span>New Contemplation</span>
           </button>
         </div>
 
-        <!-- System & Model Telemetry Card -->
-        <div class="mt-5 p-4 rounded-2xl bg-zen-850 border border-zen-border">
-          <div class="flex items-center justify-between pb-3 border-b border-zen-border/70">
-            <span class="text-xs font-semibold tracking-wider uppercase text-slate-400 flex items-center gap-1.5">
-              <i data-lucide="cpu" class="w-3.5 h-3.5 text-amber-400"></i> Local Engine
+        <!-- System & Model Telemetry Card (Hidden in Light Theme, preserved in Zen Dark Theme) -->
+        <div id="sidebar-stats-card" class="hidden dark:block mt-5 p-4 rounded-2xl bg-slate-50 dark:bg-zen-850 border border-slate-200 dark:border-zen-border transition-colors duration-300">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-zen-border/70">
+            <span class="text-xs font-semibold tracking-wider uppercase text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <i data-lucide="cpu" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400"></i> Local Engine
             </span>
-            <span id="model-status-pill" class="flex items-center gap-1.5 text-[11px] font-medium text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="model-status-pill" class="flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-300/60 dark:text-emerald-400 dark:bg-emerald-950/60 dark:border-emerald-500/30 px-2 py-0.5 rounded-full">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
               Active
             </span>
           </div>
 
           <div class="mt-3 space-y-2.5 text-xs">
             <div class="flex items-center justify-between">
-              <span class="text-slate-400">LLM Reasoning</span>
-              <span id="active-model-name" class="font-mono text-amber-300 font-medium bg-zen-800 px-2 py-0.5 rounded border border-zen-border">qwen2.5:3b</span>
+              <span class="text-slate-500 dark:text-slate-400">LLM Reasoning</span>
+              <span id="active-model-name" class="font-mono text-amber-800 dark:text-amber-300 font-medium bg-amber-50 dark:bg-zen-800 px-2 py-0.5 rounded border border-amber-200/80 dark:border-zen-border">qwen2.5:3b</span>
             </div>
             
             <div class="flex items-center justify-between">
-              <span class="text-slate-400">Vector Knowledge Base</span>
-              <span class="font-medium text-slate-200">FAISS Master Index</span>
+              <span class="text-slate-500 dark:text-slate-400">Vector Knowledge Base</span>
+              <span class="font-medium text-slate-800 dark:text-slate-200">FAISS Master Index</span>
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-slate-400">Total Discourse Vectors</span>
-              <span id="vector-count" class="font-mono text-amber-400 font-semibold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">374,096</span>
+              <span class="text-slate-500 dark:text-slate-400">Total Discourse Vectors</span>
+              <span id="vector-count" class="font-mono text-amber-800 dark:text-amber-400 font-semibold bg-amber-100/80 dark:bg-amber-500/10 px-2 py-0.5 rounded border border-amber-300/80 dark:border-amber-500/20">374,096</span>
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-slate-400">Retrieval Paradigm</span>
-              <span class="font-medium text-slate-300">Hierarchical (k=3)</span>
+              <span class="text-slate-500 dark:text-slate-400">Retrieval Paradigm</span>
+              <span class="font-medium text-slate-700 dark:text-slate-300">Hierarchical (k=3)</span>
             </div>
 
             <div class="flex items-center justify-between">
-              <span class="text-slate-400">Embedding Backbone</span>
-              <span class="font-mono text-[11px] text-slate-300">bge-large-en-v1.5</span>
+              <span class="text-slate-500 dark:text-slate-400">Embedding Backbone</span>
+              <span class="font-mono text-[11px] text-slate-700 dark:text-slate-300">bge-large-en-v1.5</span>
             </div>
 
-            <div class="flex items-center justify-between pt-2 border-t border-zen-border/50">
-              <span class="text-slate-400 flex items-center gap-1">
-                <i data-lucide="zap" class="w-3 h-3 text-amber-400"></i> Latency
+            <div class="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-zen-border/50">
+              <span class="text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                <i data-lucide="zap" class="w-3 h-3 text-amber-600 dark:text-amber-400"></i> Latency
               </span>
-              <span id="system-latency-display" class="font-mono text-amber-300 font-semibold">Ready</span>
+              <span id="system-latency-display" class="font-mono text-amber-800 dark:text-amber-300 font-semibold">Ready</span>
             </div>
           </div>
         </div>
 
         <!-- Contemplative Philosophical Inquiries -->
         <div class="mt-5">
-          <p class="text-xs font-semibold tracking-wider uppercase text-slate-400 mb-2.5 flex items-center gap-1.5">
-            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i> Meditative Inquiries
+          <p class="text-xs font-semibold tracking-wider uppercase text-slate-500 dark:text-slate-400 mb-2.5 flex items-center gap-1.5">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400"></i> Meditative Inquiries
           </p>
           <div class="space-y-1.5">
-            <button class="suggest-btn w-full text-left text-xs text-slate-300 hover:text-amber-200 bg-zen-850 hover:bg-zen-800 border border-zen-border hover:border-amber-500/40 p-2.5 rounded-xl transition duration-150 flex items-start gap-2">
-              <i data-lucide="compass" class="w-3.5 h-3.5 text-amber-400/80 mt-0.5 shrink-0"></i>
+            <button class="suggest-btn w-full text-left text-xs text-slate-700 dark:text-slate-300 hover:text-amber-900 dark:hover:text-amber-200 bg-white hover:bg-amber-50/70 dark:bg-zen-850 dark:hover:bg-zen-800 border border-slate-200 hover:border-amber-300/80 dark:border-zen-border dark:hover:border-amber-500/40 p-2.5 rounded-xl transition duration-150 flex items-start gap-2 shadow-2xs">
+              <i data-lucide="compass" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400/80 mt-0.5 shrink-0"></i>
               <span>What is the true nature of meditation according to Osho?</span>
             </button>
-            <button class="suggest-btn w-full text-left text-xs text-slate-300 hover:text-amber-200 bg-zen-850 hover:bg-zen-800 border border-zen-border hover:border-amber-500/40 p-2.5 rounded-xl transition duration-150 flex items-start gap-2">
-              <i data-lucide="feather" class="w-3.5 h-3.5 text-amber-400/80 mt-0.5 shrink-0"></i>
+            <button class="suggest-btn w-full text-left text-xs text-slate-700 dark:text-slate-300 hover:text-amber-900 dark:hover:text-amber-200 bg-white hover:bg-amber-50/70 dark:bg-zen-850 dark:hover:bg-zen-800 border border-slate-200 hover:border-amber-300/80 dark:border-zen-border dark:hover:border-amber-500/40 p-2.5 rounded-xl transition duration-150 flex items-start gap-2 shadow-2xs">
+              <i data-lucide="feather" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400/80 mt-0.5 shrink-0"></i>
               <span>How does one move beyond the ego and the thinking mind?</span>
             </button>
-            <button class="suggest-btn w-full text-left text-xs text-slate-300 hover:text-amber-200 bg-zen-850 hover:bg-zen-800 border border-zen-border hover:border-amber-500/40 p-2.5 rounded-xl transition duration-150 flex items-start gap-2">
-              <i data-lucide="heart" class="w-3.5 h-3.5 text-amber-400/80 mt-0.5 shrink-0"></i>
+            <button class="suggest-btn w-full text-left text-xs text-slate-700 dark:text-slate-300 hover:text-amber-900 dark:hover:text-amber-200 bg-white hover:bg-amber-50/70 dark:bg-zen-850 dark:hover:bg-zen-800 border border-slate-200 hover:border-amber-300/80 dark:border-zen-border dark:hover:border-amber-500/40 p-2.5 rounded-xl transition duration-150 flex items-start gap-2 shadow-2xs">
+              <i data-lucide="heart" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400/80 mt-0.5 shrink-0"></i>
               <span>What is the difference between loneliness and aloneness?</span>
             </button>
-            <button class="suggest-btn w-full text-left text-xs text-slate-300 hover:text-amber-200 bg-zen-850 hover:bg-zen-800 border border-zen-border hover:border-amber-500/40 p-2.5 rounded-xl transition duration-150 flex items-start gap-2">
-              <i data-lucide="wind" class="w-3.5 h-3.5 text-amber-400/80 mt-0.5 shrink-0"></i>
+            <button class="suggest-btn w-full text-left text-xs text-slate-700 dark:text-slate-300 hover:text-amber-900 dark:hover:text-amber-200 bg-white hover:bg-amber-50/70 dark:bg-zen-850 dark:hover:bg-zen-800 border border-slate-200 hover:border-amber-300/80 dark:border-zen-border dark:hover:border-amber-500/40 p-2.5 rounded-xl transition duration-150 flex items-start gap-2 shadow-2xs">
+              <i data-lucide="wind" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400/80 mt-0.5 shrink-0"></i>
               <span>Explain the paradox between absolute freedom and responsibility.</span>
             </button>
           </div>
@@ -311,11 +426,11 @@
 
         <!-- Footer Zen Quote -->
         <div class="mt-auto pt-6 text-center">
-          <div class="p-3.5 rounded-xl bg-gradient-to-b from-zen-850 to-zen-900 border border-zen-border/70">
-            <p class="italic font-serif text-[12px] text-amber-200/90 leading-relaxed">
+          <div class="p-3.5 rounded-xl bg-gradient-to-b from-amber-50/70 to-white dark:from-zen-850 dark:to-zen-900 border border-amber-200/70 dark:border-zen-border/70 shadow-2xs">
+            <p class="italic font-serif text-[12px] text-amber-900 dark:text-amber-200/90 leading-relaxed">
               "Be a witness, not a judge. The moment you witness without judgment, you are free."
             </p>
-            <span class="block mt-1 text-[11px] font-sans text-amber-400/70 tracking-widest uppercase">— OSHO</span>
+            <span class="block mt-1 text-[11px] font-sans text-amber-700 dark:text-amber-400/70 tracking-widest uppercase">— OSHO</span>
           </div>
         </div>
 
@@ -323,120 +438,150 @@
     </aside>
 
     <!-- Overlay for mobile drawer -->
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-30 hidden md:hidden"></div>
+    <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-xs z-30 hidden md:hidden"></div>
 
     <!-- ==================================================== -->
     <!-- MAIN CHAT INTERFACE                                  -->
     <!-- ==================================================== -->
-    <main class="flex-1 flex flex-col h-full bg-zen-950 zen-bg-pattern relative overflow-hidden">
+    <main class="flex-1 flex flex-col h-full bg-slate-50 dark:bg-zen-950 zen-bg-pattern relative overflow-hidden transition-colors duration-300">
       
       <!-- Top Navigation Header -->
-      <header class="h-16 border-b border-zen-border bg-zen-900/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between shrink-0 z-20">
+      <header class="h-16 border-b border-slate-200 dark:border-zen-border bg-white/85 dark:bg-zen-900/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between shrink-0 z-20 transition-colors duration-300">
+        
+        <!-- Left: Sidebar Button & Auto-Hiding Consciousness Status Banner -->
         <div class="flex items-center gap-3">
-          <button id="open-sidebar-btn" class="md:hidden text-slate-300 hover:text-white p-2 rounded-lg bg-zen-850 border border-zen-border">
+          <button id="open-sidebar-btn" aria-label="Open sidebar" class="md:hidden text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white p-2 rounded-lg bg-slate-100 dark:bg-zen-850 border border-slate-200 dark:border-zen-border shadow-2xs">
             <i data-lucide="menu" class="w-5 h-5"></i>
           </button>
           <div class="flex items-center gap-2.5">
-            <div class="w-3 h-3 rounded-full bg-amber-400/80 animate-ping"></div>
-            <div>
-              <h2 class="font-serif text-sm font-semibold tracking-wide text-amber-100 flex items-center gap-2">
+            <!-- Session Status Indicator Beacon -->
+            <div class="relative flex h-3 w-3 shrink-0" title="Session Active">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+            </div>
+
+            <!-- Auto-Hiding Header Banner -->
+            <div id="hero-banner" class="hero-banner-transition flex flex-col justify-center">
+              <h2 class="font-serif text-sm font-semibold tracking-wide text-slate-900 dark:text-amber-100 flex items-center gap-2 whitespace-nowrap">
                 Osho Philosophical Consciousness
               </h2>
-              <span class="text-[11px] text-slate-400 hidden sm:inline-block">Grounded in 370k+ verified parent-child discourse chunks</span>
+              <span class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:inline-block whitespace-nowrap">Grounded in 370k+ verified parent-child discourse chunks</span>
             </div>
           </div>
         </div>
 
-        <div class="flex items-center gap-3">
+        <!-- Right Controls: Latency, Theme Switcher, Clear Chat -->
+        <div class="flex items-center gap-2 sm:gap-3">
           <!-- Latency Badge -->
-          <div id="top-latency-tag" class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-zen-850 border border-zen-border text-xs text-amber-300">
-            <i data-lucide="timer" class="w-3.5 h-3.5 text-amber-400"></i>
+          <div id="top-latency-tag" class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-zen-850 border border-slate-200 dark:border-zen-border text-xs text-slate-700 dark:text-amber-300">
+            <i data-lucide="timer" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400"></i>
             <span id="top-latency-text">0.00s</span>
           </div>
 
+          <!-- Sleek Theme Toggle Switch Button -->
+          <button 
+            id="theme-toggle-btn" 
+            type="button" 
+            role="switch"
+            aria-checked="true"
+            aria-label="Toggle visual theme" 
+            title="Switch between Zen Amber Dark and Minimalist Light" 
+            class="group relative flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-zen-850 dark:hover:bg-zen-800 border border-slate-200 dark:border-zen-border text-slate-700 dark:text-amber-200 text-xs font-medium transition-all duration-200 shadow-2xs active:scale-95 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+          >
+            <div class="relative w-4 h-4 flex items-center justify-center">
+              <!-- Sun Icon for Light Mode -->
+              <i data-lucide="sun" id="theme-sun-icon" class="w-4 h-4 text-amber-600 absolute theme-icon-spring"></i>
+              <!-- Moon Icon for Dark Mode -->
+              <i data-lucide="moon" id="theme-moon-icon" class="w-4 h-4 text-amber-300 absolute theme-icon-spring"></i>
+            </div>
+            <span id="theme-mode-text" class="hidden sm:inline font-sans text-xs">Zen Dark</span>
+          </button>
+
           <!-- Clear Chat Button -->
-          <button id="clear-chat-top-btn" title="Reset conversation memory" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zen-850 hover:bg-zen-800 border border-zen-border hover:border-red-500/40 text-slate-300 hover:text-red-300 text-xs transition duration-150">
+          <button id="clear-chat-top-btn" title="Reset conversation memory" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-zen-850 dark:hover:bg-zen-800 border border-slate-200 dark:border-zen-border hover:border-red-400 dark:hover:border-red-500/40 text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-300 text-xs font-medium transition duration-150 shadow-2xs">
             <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
             <span class="hidden sm:inline">Clear Chat</span>
           </button>
         </div>
       </header>
 
-      <!-- Message History Container -->
+      <!-- Message History Container (Expands into full vertical space) -->
       <div id="messages-container" class="flex-1 overflow-y-auto px-4 sm:px-8 py-6 space-y-6 scroll-smooth">
         
-        <!-- Welcome Screen (Shown when no messages) -->
-        <div id="welcome-state" class="h-full flex flex-col items-center justify-center text-center max-w-xl mx-auto my-auto py-10">
+        <!-- Welcome Screen (Auto-hides upon chat initiation; Red-box elements removed for Light Theme) -->
+        <div id="welcome-state" class="welcome-transition h-full flex flex-col items-center justify-center text-center max-w-xl mx-auto my-auto py-10">
           <div class="relative mb-6">
-            <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-500/20 via-zen-800 to-amber-400/10 border border-amber-500/40 flex items-center justify-center text-amber-400 animate-breathe gold-glow-strong">
+            <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-500/20 via-amber-100 to-amber-200/30 dark:from-amber-500/20 dark:via-zen-800 dark:to-amber-400/10 border border-amber-400/50 dark:border-amber-500/40 flex items-center justify-center text-amber-600 dark:text-amber-400 animate-breathe shadow-sm dark:gold-glow-strong">
               <i data-lucide="flame" class="w-10 h-10"></i>
             </div>
-            <div class="absolute -inset-2 rounded-full border border-amber-500/10 pointer-events-none"></div>
+            <div class="absolute -inset-2 rounded-full border border-amber-500/20 dark:border-amber-500/10 pointer-events-none"></div>
           </div>
 
-          <h2 class="font-serif text-2xl sm:text-3xl font-bold text-amber-100 tracking-wide mb-3">
+          <h2 class="font-serif text-2xl sm:text-3xl font-bold text-slate-900 dark:text-amber-100 tracking-wide mb-3">
             Enter Into The Silence
           </h2>
-          <p class="text-sm sm:text-base text-slate-300 leading-relaxed max-w-lg mb-8">
+
+          <!-- Hero Welcome Intro Box (Omitted in Light Theme, preserved in Zen Dark Theme) -->
+          <p class="hidden dark:block text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-lg mb-8">
             Speak directly with the profound wisdom and discourses of Osho. Every answer is retrieved with hierarchical precision from the master book index and synthesized via local intelligence.
           </p>
 
-          <!-- Starter Prompt Cards -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full text-left">
-            <button class="welcome-card p-3.5 rounded-xl bg-zen-900/90 hover:bg-zen-850 border border-zen-border hover:border-amber-500/50 transition-all duration-200 group text-xs text-slate-300 hover:text-amber-100 shadow-lg">
-              <span class="font-semibold text-amber-400 block mb-1 flex items-center gap-1.5">
-                <i data-lucide="sparkle" class="w-3.5 h-3.5"></i> The Art of Meditation
+          <!-- Starter Prompt Cards Grid (Omitted in Light Theme, preserved in Zen Dark Theme) -->
+          <div class="hidden dark:grid grid-cols-1 sm:grid-cols-2 gap-3 w-full text-left">
+            <button class="welcome-card p-3.5 rounded-xl bg-white hover:bg-amber-50/60 dark:bg-zen-900/90 dark:hover:bg-zen-850 border border-slate-200 hover:border-amber-400/60 dark:border-zen-border dark:hover:border-amber-500/50 transition-all duration-200 group text-xs text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-amber-100 shadow-sm hover:shadow-md">
+              <span class="font-semibold text-amber-700 dark:text-amber-400 block mb-1 flex items-center gap-1.5">
+                <i data-lucide="sparkle" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400"></i> The Art of Meditation
               </span>
               What does Osho mean when he says "Meditation is not concentration"?
             </button>
 
-            <button class="welcome-card p-3.5 rounded-xl bg-zen-900/90 hover:bg-zen-850 border border-zen-border hover:border-amber-500/50 transition-all duration-200 group text-xs text-slate-300 hover:text-amber-100 shadow-lg">
-              <span class="font-semibold text-amber-400 block mb-1 flex items-center gap-1.5">
-                <i data-lucide="eye" class="w-3.5 h-3.5"></i> The Nature of Witnessing
+            <button class="welcome-card p-3.5 rounded-xl bg-white hover:bg-amber-50/60 dark:bg-zen-900/90 dark:hover:bg-zen-850 border border-slate-200 hover:border-amber-400/60 dark:border-zen-border dark:hover:border-amber-500/50 transition-all duration-200 group text-xs text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-amber-100 shadow-sm hover:shadow-md">
+              <span class="font-semibold text-amber-700 dark:text-amber-400 block mb-1 flex items-center gap-1.5">
+                <i data-lucide="eye" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400"></i> The Nature of Witnessing
               </span>
               Explain Sakshi (witness consciousness) and how to practice it daily.
             </button>
 
-            <button class="welcome-card p-3.5 rounded-xl bg-zen-900/90 hover:bg-zen-850 border border-zen-border hover:border-amber-500/50 transition-all duration-200 group text-xs text-slate-300 hover:text-amber-100 shadow-lg">
-              <span class="font-semibold text-amber-400 block mb-1 flex items-center gap-1.5">
-                <i data-lucide="sun" class="w-3.5 h-3.5"></i> Living in the Present
+            <button class="welcome-card p-3.5 rounded-xl bg-white hover:bg-amber-50/60 dark:bg-zen-900/90 dark:hover:bg-zen-850 border border-slate-200 hover:border-amber-400/60 dark:border-zen-border dark:hover:border-amber-500/50 transition-all duration-200 group text-xs text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-amber-100 shadow-sm hover:shadow-md">
+              <span class="font-semibold text-amber-700 dark:text-amber-400 block mb-1 flex items-center gap-1.5">
+                <i data-lucide="sun" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400"></i> Living in the Present
               </span>
               Why is the ego constantly living in the past or the future?
             </button>
 
-            <button class="welcome-card p-3.5 rounded-xl bg-zen-900/90 hover:bg-zen-850 border border-zen-border hover:border-amber-500/50 transition-all duration-200 group text-xs text-slate-300 hover:text-amber-100 shadow-lg">
-              <span class="font-semibold text-amber-400 block mb-1 flex items-center gap-1.5">
-                <i data-lucide="heart" class="w-3.5 h-3.5"></i> Love & Attachment
+            <button class="welcome-card p-3.5 rounded-xl bg-white hover:bg-amber-50/60 dark:bg-zen-900/90 dark:hover:bg-zen-850 border border-slate-200 hover:border-amber-400/60 dark:border-zen-border dark:hover:border-amber-500/50 transition-all duration-200 group text-xs text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-amber-100 shadow-sm hover:shadow-md">
+              <span class="font-semibold text-amber-700 dark:text-amber-400 block mb-1 flex items-center gap-1.5">
+                <i data-lucide="heart" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400"></i> Love & Attachment
               </span>
               What is the distinction between love as an emotion vs. love as a state of being?
             </button>
           </div>
         </div>
 
-        <!-- Chat messages will be dynamically injected here -->
+        <!-- Dynamic Chat Messages List -->
         <div id="messages-list" class="space-y-6 max-w-4xl mx-auto"></div>
 
         <!-- Elegant Contemplation Loading State -->
         <div id="loading-indicator" class="hidden max-w-4xl mx-auto">
-          <div class="flex items-start gap-4 p-5 rounded-2xl bg-zen-900/90 border border-amber-500/30 gold-glow">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500/30 to-zen-800 border border-amber-400/50 flex items-center justify-center text-amber-400 shrink-0 animate-breathe">
+          <div class="flex items-start gap-4 p-5 rounded-2xl bg-white dark:bg-zen-900/90 border border-amber-300/80 dark:border-amber-500/30 shadow-md dark:gold-glow transition-colors duration-300">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500/20 to-amber-100 dark:from-amber-500/30 dark:to-zen-800 border border-amber-400/60 dark:border-amber-400/50 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0 animate-breathe shadow-xs">
               <i data-lucide="lotus" class="w-5 h-5"></i>
             </div>
             <div class="flex-1 space-y-2 pt-1">
               <div class="flex items-center gap-2">
-                <span class="font-serif text-sm font-semibold text-amber-300">Osho</span>
-                <span class="text-xs text-amber-400/80 font-mono flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+                <span class="font-serif text-sm font-semibold text-amber-700 dark:text-amber-300">Osho</span>
+                <span class="text-xs text-amber-700 dark:text-amber-400/80 font-mono flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400 animate-ping"></span>
                   <span id="contemplating-phrase">Osho is contemplating the silence...</span>
                 </span>
               </div>
-              <p class="text-xs text-slate-400 animate-pulse">
+              <p class="text-xs text-slate-500 dark:text-slate-400 animate-pulse">
                 Consulting 374,000+ discourse vectors and weaving parent context into Qwen 2.5...
               </p>
               <div class="flex items-center gap-1.5 pt-1">
-                <span class="w-2 h-2 rounded-full bg-amber-400/60 animate-bounce" style="animation-delay: 0s;"></span>
-                <span class="w-2 h-2 rounded-full bg-amber-400/60 animate-bounce" style="animation-delay: 0.2s;"></span>
-                <span class="w-2 h-2 rounded-full bg-amber-400/60 animate-bounce" style="animation-delay: 0.4s;"></span>
+                <span class="w-2 h-2 rounded-full bg-amber-500/80 dark:bg-amber-400/60 animate-bounce" style="animation-delay: 0s;"></span>
+                <span class="w-2 h-2 rounded-full bg-amber-500/80 dark:bg-amber-400/60 animate-bounce" style="animation-delay: 0.2s;"></span>
+                <span class="w-2 h-2 rounded-full bg-amber-500/80 dark:bg-amber-400/60 animate-bounce" style="animation-delay: 0.4s;"></span>
               </div>
             </div>
           </div>
@@ -445,25 +590,25 @@
       </div>
 
       <!-- Bottom Floating Controls & Input Bar -->
-      <footer class="p-4 sm:p-6 bg-gradient-to-t from-zen-950 via-zen-950/95 to-transparent shrink-0 z-20">
+      <footer class="p-4 sm:p-6 bg-gradient-to-t from-slate-50 via-slate-50/95 to-transparent dark:from-zen-950 dark:via-zen-950/95 dark:to-transparent shrink-0 z-20 transition-colors duration-300">
         <div class="max-w-4xl mx-auto">
           
-          <form id="chat-form" class="relative flex flex-col bg-zen-900 rounded-2xl border border-zen-border focus-within:border-amber-500/60 transition-all duration-200 gold-glow shadow-2xl">
+          <form id="chat-form" class="relative flex flex-col bg-white dark:bg-zen-900 rounded-2xl border border-slate-200 dark:border-zen-border focus-within:border-amber-500/70 dark:focus-within:border-amber-500/60 transition-all duration-200 shadow-sm focus-within:shadow-md dark:gold-glow dark:shadow-2xl">
             
             <textarea
               id="user-input"
               rows="1"
               placeholder="Ask Osho about meditation, awareness, love, freedom, or life... (Press Enter to send)"
-              class="w-full bg-transparent text-slate-100 placeholder-slate-500 px-4 pt-3.5 pb-12 rounded-2xl resize-none focus:outline-none text-sm sm:text-base leading-relaxed max-h-40 overflow-y-auto"
+              class="w-full bg-transparent text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 px-4 pt-3.5 pb-12 rounded-2xl resize-none focus:outline-none text-sm sm:text-base leading-relaxed max-h-40 overflow-y-auto"
             ></textarea>
 
             <!-- Bottom Action Row inside Input Box -->
             <div class="absolute bottom-2.5 inset-x-3 flex items-center justify-between pointer-events-none">
               
               <div class="flex items-center gap-2 pointer-events-auto">
-                <span class="text-[11px] text-slate-400 font-medium hidden sm:inline-block">
-                  <kbd class="px-1.5 py-0.5 rounded bg-zen-800 border border-zen-border text-slate-300 font-mono text-[10px]">Enter</kbd> send · 
-                  <kbd class="px-1.5 py-0.5 rounded bg-zen-800 border border-zen-border text-slate-300 font-mono text-[10px]">Shift+Enter</kbd> new line
+                <span class="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:inline-block">
+                  <kbd class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zen-800 border border-slate-200 dark:border-zen-border text-slate-600 dark:text-slate-300 font-mono text-[10px]">Enter</kbd> send · 
+                  <kbd class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zen-800 border border-slate-200 dark:border-zen-border text-slate-600 dark:text-slate-300 font-mono text-[10px]">Shift+Enter</kbd> new line
                 </span>
               </div>
 
@@ -472,7 +617,7 @@
                   type="button"
                   id="reset-input-btn"
                   title="Clear text"
-                  class="p-2 text-slate-400 hover:text-slate-200 rounded-lg hover:bg-zen-800 transition"
+                  class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-zen-800 transition"
                 >
                   <i data-lucide="eraser" class="w-4 h-4"></i>
                 </button>
@@ -480,7 +625,7 @@
                 <button
                   type="submit"
                   id="send-button"
-                  class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zen-950 font-semibold text-sm shadow-md transition-all duration-200 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                  class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-semibold text-sm shadow-md transition-all duration-200 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 >
                   <span>Inquire</span>
                   <i data-lucide="arrow-up" class="w-4 h-4"></i>
@@ -491,8 +636,8 @@
 
           </form>
 
-          <p class="text-center text-[11px] text-slate-400 mt-2">
-            Local RAG synthesis powered by Ollama Qwen2.5. | Courtesy and gratitude to oshofragrance
+          <p class="text-center text-[11px] text-slate-400 dark:text-slate-500 mt-2">
+            Local RAG synthesis powered by Ollama Qwen2.5 · Grounded in verified Osho discourses
           </p>
 
         </div>
@@ -528,6 +673,7 @@
     const messagesContainer = document.getElementById("messages-container");
     const messagesList = document.getElementById("messages-list");
     const welcomeState = document.getElementById("welcome-state");
+    const heroBanner = document.getElementById("hero-banner");
     const loadingIndicator = document.getElementById("loading-indicator");
     const contemplatingPhrase = document.getElementById("contemplating-phrase");
     const systemLatencyDisplay = document.getElementById("system-latency-display");
@@ -542,9 +688,107 @@
     const closeSidebarBtn = document.getElementById("close-sidebar-btn");
     const sidebar = document.getElementById("sidebar");
     const sidebarOverlay = document.getElementById("sidebar-overlay");
+    const themeToggleBtn = document.getElementById("theme-toggle-btn");
+    const themeModeText = document.getElementById("theme-mode-text");
+    const hljsThemeLink = document.getElementById("highlight-theme");
 
     // Initialize Lucide icons
     lucide.createIcons();
+
+    // Configure Marked parser with Highlight.js code highlighting
+    marked.setOptions({
+      highlight: function(code, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+          try {
+            return hljs.highlight(code, { language: lang }).value;
+          } catch (e) {}
+        }
+        try {
+          return hljs.highlightAuto(code).value;
+        } catch (e) {
+          return code;
+        }
+      },
+      breaks: true,
+      gfm: true
+    });
+
+    // ==========================================
+    // AUTO-HIDE & RESTORE HERO ELEMENTS LOGIC
+    // ==========================================
+    function autoHideHeroElements() {
+      // Smoothly fade out and collapse the top header banner
+      if (heroBanner && !heroBanner.classList.contains("hidden")) {
+        heroBanner.classList.add("hero-banner-hidden");
+        setTimeout(() => {
+          heroBanner.classList.add("hidden");
+        }, 450);
+      }
+
+      // Smoothly fade out and hide the center welcome hero state
+      if (welcomeState && !welcomeState.classList.contains("hidden")) {
+        welcomeState.classList.add("welcome-hidden");
+        setTimeout(() => {
+          welcomeState.classList.add("hidden");
+        }, 450);
+      }
+    }
+
+    function restoreHeroElements() {
+      // Restore top header banner
+      if (heroBanner) {
+        heroBanner.classList.remove("hidden");
+        requestAnimationFrame(() => {
+          heroBanner.classList.remove("hero-banner-hidden");
+        });
+      }
+
+      // Restore center welcome hero state
+      if (welcomeState) {
+        welcomeState.classList.remove("hidden");
+        requestAnimationFrame(() => {
+          welcomeState.classList.remove("welcome-hidden");
+        });
+      }
+    }
+
+    // ==========================================
+    // THEME MANAGEMENT (Zen Dark / Minimal Light)
+    // ==========================================
+    function applyTheme(theme) {
+      const isDark = theme === "dark";
+      const html = document.documentElement;
+
+      if (isDark) {
+        html.classList.add("dark");
+        localStorage.setItem("osho_rag_theme", "dark");
+        if (themeToggleBtn) themeToggleBtn.setAttribute("aria-checked", "true");
+        if (themeModeText) themeModeText.textContent = "Zen Dark";
+        if (hljsThemeLink) {
+          hljsThemeLink.href = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css";
+        }
+      } else {
+        html.classList.remove("dark");
+        localStorage.setItem("osho_rag_theme", "light");
+        if (themeToggleBtn) themeToggleBtn.setAttribute("aria-checked", "false");
+        if (themeModeText) themeModeText.textContent = "Minimal Light";
+        if (hljsThemeLink) {
+          hljsThemeLink.href = "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css";
+        }
+      }
+    }
+
+    // Initialize theme from storage (default to 'dark' for Zen Amber Dark)
+    const currentStoredTheme = localStorage.getItem("osho_rag_theme") || "dark";
+    applyTheme(currentStoredTheme);
+
+    // Theme Toggle Handler
+    themeToggleBtn.addEventListener("click", () => {
+      const isCurrentlyDark = document.documentElement.classList.contains("dark");
+      const nextTheme = isCurrentlyDark ? "light" : "dark";
+      applyTheme(nextTheme);
+      showToast(`Switched to ${nextTheme === "dark" ? "Zen Amber Dark" : "Minimalist Light"} mode`, "info");
+    });
 
     // Auto-grow textarea
     userInput.addEventListener("input", function() {
@@ -589,10 +833,10 @@
         const res = await fetch("/api/stats");
         if (res.ok) {
           const data = await res.json();
-          if (data.vector_count) {
+          if (data.vector_count && vectorCountEl) {
             vectorCountEl.textContent = Number(data.vector_count).toLocaleString();
           }
-          if (data.model) {
+          if (data.model && activeModelName) {
             activeModelName.textContent = data.model;
           }
         }
@@ -602,20 +846,20 @@
     }
     fetchStats();
 
-    // Toast Notification Utility
+    // Toast Notification Utility (Adaptive Light/Dark Styling)
     function showToast(message, type = "info") {
       const container = document.getElementById("toast-container");
       const toast = document.createElement("div");
       toast.className = `pointer-events-auto flex items-center gap-2 px-4 py-3 rounded-xl border text-xs font-medium shadow-xl backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0 ${
         type === "success" 
-          ? "bg-emerald-950/90 border-emerald-500/40 text-emerald-200" 
+          ? "bg-white dark:bg-emerald-950/90 border-emerald-500/40 text-emerald-800 dark:text-emerald-200" 
           : type === "error" 
-          ? "bg-red-950/90 border-red-500/40 text-red-200" 
-          : "bg-zen-850 border-amber-500/40 text-amber-200"
+          ? "bg-white dark:bg-red-950/90 border-red-500/40 text-red-800 dark:text-red-200" 
+          : "bg-white dark:bg-zen-850 border-amber-500/40 text-slate-800 dark:text-amber-200"
       }`;
       
       const icon = type === "success" ? "check-circle" : type === "error" ? "alert-circle" : "info";
-      toast.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 shrink-0"></i><span>${message}</span>`;
+      toast.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400"></i><span>${message}</span>`;
       container.appendChild(toast);
       lucide.createIcons();
 
@@ -639,8 +883,8 @@
         });
         if (res.ok) {
           messagesList.innerHTML = "";
-          welcomeState.classList.remove("hidden");
-          systemLatencyDisplay.textContent = "Ready";
+          restoreHeroElements();
+          if (systemLatencyDisplay) systemLatencyDisplay.textContent = "Ready";
           topLatencyTag.classList.add("hidden");
           showToast("Conversation memory cleared. Mind is empty.", "success");
         }
@@ -694,7 +938,7 @@
         navigator.clipboard.writeText(text).then(() => {
           showToast("Copied contemplation to clipboard", "success");
           const original = btn.innerHTML;
-          btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i>`;
+          btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400"></i>`;
           lucide.createIcons();
           setTimeout(() => {
             btn.innerHTML = original;
@@ -706,9 +950,9 @@
       }
     };
 
-    // Render User Message
+    // Render User Message (Adaptive Light & Dark Bubbles)
     function appendUserMessage(text) {
-      welcomeState.classList.add("hidden");
+      autoHideHeroElements();
       const msgDiv = document.createElement("div");
       msgDiv.className = "flex items-start justify-end gap-3 max-w-3xl ml-auto";
       
@@ -716,12 +960,12 @@
 
       msgDiv.innerHTML = `
         <div class="flex flex-col items-end max-w-xl">
-          <div class="px-5 py-3.5 rounded-2xl rounded-tr-sm bg-gradient-to-br from-zen-800 to-zen-850 border border-zen-border text-slate-100 text-sm sm:text-base leading-relaxed shadow-lg">
+          <div class="px-5 py-3.5 rounded-2xl rounded-tr-sm bg-amber-50/80 dark:bg-gradient-to-br dark:from-zen-800 dark:to-zen-850 border border-amber-200/70 dark:border-zen-border text-slate-800 dark:text-slate-100 text-sm sm:text-base leading-relaxed shadow-2xs dark:shadow-lg">
             ${escaped}
           </div>
-          <span class="text-[10px] text-slate-500 mt-1 font-mono">You · Seeker</span>
+          <span class="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-mono">You · Seeker</span>
         </div>
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-zen-750 to-zen-700 border border-zen-border flex items-center justify-center text-amber-300 shrink-0 shadow-md">
+        <div class="w-9 h-9 rounded-xl bg-amber-100/90 dark:bg-gradient-to-tr dark:from-zen-750 dark:to-zen-700 border border-amber-200 dark:border-zen-border flex items-center justify-center text-amber-700 dark:text-amber-300 shrink-0 shadow-2xs dark:shadow-md">
           <i data-lucide="user" class="w-4 h-4"></i>
         </div>
       `;
@@ -731,7 +975,7 @@
       scrollToBottom();
     }
 
-    // Render Assistant Message with Markdown & Citations Accordion
+    // Render Assistant Message with Markdown Prose & Citations Accordion
     function appendAssistantMessage(answerMarkdown, sources, latency) {
       const msgDiv = document.createElement("div");
       msgDiv.className = "flex items-start gap-3 max-w-4xl mr-auto";
@@ -750,39 +994,39 @@
         sources.forEach((src, idx) => {
           const chunkId = `chunk_${messageId}_${idx}`;
           const cleanSnippet = (src.parent_content || src.snippet || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-          const scoreBadge = src.score !== null ? `<span class="px-1.5 py-0.5 rounded bg-zen-800 text-[10px] font-mono text-slate-400">Dist: ${src.score}</span>` : "";
+          const scoreBadge = src.score !== null ? `<span class="px-1.5 py-0.5 rounded bg-slate-200/80 dark:bg-zen-800 text-[10px] font-mono text-slate-600 dark:text-slate-400">Dist: ${src.score}</span>` : "";
 
           sourceCards += `
-            <div class="rounded-xl bg-zen-950/80 border border-zen-border/70 overflow-hidden text-xs">
+            <div class="rounded-xl bg-slate-50/90 dark:bg-zen-950/80 border border-slate-200 dark:border-zen-border/70 overflow-hidden text-xs">
               <!-- Source Item Header -->
               <div 
                 onclick="toggleAccordion('${chunkId}')" 
-                class="flex items-center justify-between p-3 cursor-pointer hover:bg-zen-850/60 transition duration-150 select-none"
+                class="flex items-center justify-between p-3 cursor-pointer hover:bg-amber-50/50 dark:hover:bg-zen-850/60 transition duration-150 select-none"
               >
                 <div class="flex items-center gap-2 flex-wrap">
-                  <span class="font-serif font-semibold text-amber-300 flex items-center gap-1.5">
-                    <i data-lucide="book-open" class="w-3.5 h-3.5 text-amber-400"></i>
+                  <span class="font-serif font-semibold text-amber-700 dark:text-amber-300 flex items-center gap-1.5">
+                    <i data-lucide="book-open" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400"></i>
                     ${src.book}
                   </span>
-                  <span class="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-medium">
+                  <span class="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-[11px] font-medium">
                     Page ${src.page}
                   </span>
                   ${scoreBadge}
                 </div>
-                <div class="flex items-center gap-1.5 text-slate-400">
-                  <span class="text-[11px] hidden sm:inline text-slate-500">View Excerpt</span>
+                <div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                  <span class="text-[11px] hidden sm:inline text-slate-400 dark:text-slate-500">View Excerpt</span>
                   <i id="${chunkId}-icon" data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200"></i>
                 </div>
               </div>
 
               <!-- Collapsible Chunk Snippet -->
               <div id="${chunkId}" class="accordion-content">
-                <div class="p-3.5 border-t border-zen-border/50 bg-zen-900/90 text-slate-300 font-sans leading-relaxed text-[12px] space-y-2">
-                  <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 pb-1 border-b border-zen-border/30">
+                <div class="p-3.5 border-t border-slate-200 dark:border-zen-border/50 bg-white dark:bg-zen-900/90 text-slate-700 dark:text-slate-300 font-sans leading-relaxed text-[12px] space-y-2">
+                  <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 dark:text-slate-500 pb-1 border-b border-slate-100 dark:border-zen-border/30">
                     <span>Source File: ${src.filename}</span>
                     ${src.parent_id ? `<span>Parent Chunk ID: ${src.parent_id}</span>` : ''}
                   </div>
-                  <blockquote class="italic text-amber-100/90 pl-3 border-l-2 border-amber-500/60 py-1 bg-amber-500/5 rounded-r">
+                  <blockquote class="italic text-amber-900 dark:text-amber-100/90 pl-3 border-l-2 border-amber-500 py-1 bg-amber-50/80 dark:bg-amber-500/5 rounded-r">
                     ${cleanSnippet}
                   </blockquote>
                 </div>
@@ -792,18 +1036,18 @@
         });
 
         citationsHtml = `
-          <div class="mt-4 pt-3 border-t border-zen-border">
+          <div class="mt-4 pt-3 border-t border-slate-200 dark:border-zen-border">
             <button 
               type="button"
               onclick="toggleAccordion('${accordionId}')" 
-              class="w-full flex items-center justify-between py-2 px-3 rounded-xl bg-zen-850/90 hover:bg-zen-800 border border-amber-500/30 text-amber-200 text-xs font-medium transition duration-150 select-none"
+              class="w-full flex items-center justify-between py-2 px-3 rounded-xl bg-slate-50 hover:bg-amber-50/70 dark:bg-zen-850/90 dark:hover:bg-zen-800 border border-amber-400/40 dark:border-amber-500/30 text-amber-800 dark:text-amber-200 text-xs font-medium transition duration-150 select-none shadow-2xs"
             >
               <div class="flex items-center gap-2">
-                <i data-lucide="layers" class="w-4 h-4 text-amber-400"></i>
+                <i data-lucide="layers" class="w-4 h-4 text-amber-600 dark:text-amber-400"></i>
                 <span class="font-serif">Discourse Citations & References (${sources.length} chunks retrieved)</span>
               </div>
-              <div class="flex items-center gap-1 text-slate-400">
-                <span class="text-[11px] text-amber-400/80">Toggle</span>
+              <div class="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+                <span class="text-[11px] text-amber-700 dark:text-amber-400/80">Toggle</span>
                 <i id="${accordionId}-icon" data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200"></i>
               </div>
             </button>
@@ -816,27 +1060,27 @@
       }
 
       msgDiv.innerHTML = `
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500/20 via-zen-800 to-amber-400/10 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0 shadow-md">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500/20 via-amber-100 to-amber-200/40 dark:from-amber-500/20 dark:via-zen-800 dark:to-amber-400/10 border border-amber-400/50 dark:border-amber-500/40 flex items-center justify-center text-amber-700 dark:text-amber-400 shrink-0 shadow-2xs dark:shadow-md">
           <i data-lucide="lotus" class="w-4 h-4 animate-breathe"></i>
         </div>
 
         <div class="flex-1 max-w-3xl">
-          <div class="p-5 sm:p-6 rounded-2xl rounded-tl-sm bg-zen-900 border border-zen-border text-slate-100 shadow-xl gold-glow relative group">
+          <div class="p-5 sm:p-6 rounded-2xl rounded-tl-sm bg-white dark:bg-zen-900 border border-slate-200 dark:border-zen-border text-slate-800 dark:text-slate-100 shadow-sm dark:shadow-xl dark:gold-glow relative group transition-colors duration-300">
             
             <!-- Message Header: Osho tag, latency, copy button -->
-            <div class="flex items-center justify-between pb-3 mb-3 border-b border-zen-border/60">
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-200 dark:border-zen-border/60">
               <div class="flex items-center gap-2">
-                <span class="font-serif font-bold text-amber-300 text-sm tracking-wide">Osho</span>
-                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-zen-800 border border-zen-border text-amber-400/80">qwen2.5:3b</span>
+                <span class="font-serif font-bold text-amber-700 dark:text-amber-300 text-sm tracking-wide">Osho</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-50 dark:bg-zen-800 border border-amber-200/60 dark:border-zen-border text-amber-800 dark:text-amber-400/80">qwen2.5:3b</span>
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-[11px] font-mono text-slate-400 flex items-center gap-1">
-                  <i data-lucide="zap" class="w-3 h-3 text-amber-400"></i> ${latency}s
+                <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                  <i data-lucide="zap" class="w-3 h-3 text-amber-600 dark:text-amber-400"></i> ${latency}s
                 </span>
                 <button 
                   onclick="copyMessageText(this, '${encodedText}')" 
                   title="Copy contemplation" 
-                  class="p-1 rounded text-slate-400 hover:text-amber-300 hover:bg-zen-800 transition"
+                  class="p-1.5 rounded-lg text-slate-400 hover:text-amber-700 hover:bg-slate-100 dark:hover:text-amber-300 dark:hover:bg-zen-800 transition"
                 >
                   <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                 </button>
@@ -852,7 +1096,7 @@
             ${citationsHtml}
 
           </div>
-          <span class="text-[10px] text-slate-500 mt-1 block font-mono pl-1">Grounded in Discourse Texts</span>
+          <span class="text-[10px] text-slate-400 dark:text-slate-500 mt-1 block font-mono pl-1">Grounded in Discourse Texts</span>
         </div>
       `;
 
@@ -874,7 +1118,7 @@
       userInput.value = "";
       userInput.style.height = "auto";
 
-      // Append user bubble
+      // Append user bubble (triggers hero auto-hide)
       appendUserMessage(message);
 
       // Show contemplation loading state
@@ -906,7 +1150,7 @@
           
           // Update latency indicators
           const latencyStr = `${data.latency}s`;
-          systemLatencyDisplay.textContent = latencyStr;
+          if (systemLatencyDisplay) systemLatencyDisplay.textContent = latencyStr;
           topLatencyText.textContent = latencyStr;
           topLatencyTag.classList.remove("hidden");
         } else {
@@ -918,7 +1162,7 @@
       } catch (err) {
         clearInterval(contemplationPhrasesInterval);
         loadingIndicator.classList.add("hidden");
-        appendAssistantMessage(`⚠️ **Connection Error**: Could not reach the server at `/api/chat`. Please verify that the FastAPI backend is running.`, [], 0);
+        appendAssistantMessage(`⚠️ **Connection Error**: Could not reach the server at \`/api/chat\`. Please verify that the FastAPI backend is running.`, [], 0);
         showToast("Backend connection error", "error");
       } finally {
         isContemplating = false;
